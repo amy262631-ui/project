@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工程專案管理 V10.2 - 美化圖表版</title>
+    <title>工程專案管理 V10.3 - 年份純淨版</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,38 +12,14 @@
         body { background-color: #f8f9fa; font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif; padding-bottom: 60px; color: #343a40; }
         .navbar { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .navbar-brand { color: #1f4037 !important; font-weight: bold; }
-        
-        /* 頁籤樣式優化 */
         .nav-tabs { border-bottom: 2px solid #e9ecef; }
         .nav-tabs .nav-link { color: #6c757d; font-weight: 600; border: none; padding: 12px 20px; transition: all 0.3s; }
         .nav-tabs .nav-link.active { color: #198754; border-bottom: 3px solid #198754; background: transparent; }
-        
-        /* V10.2 新版總計卡片 (淡雅風) */
-        .summary-card { 
-            background: #ffffff; 
-            border: none; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
-            border-top: 4px solid #198754; /* 頂部裝飾線 */
-        }
+        .summary-card { background: #ffffff; border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-top: 4px solid #198754; }
         .summary-label { color: #6c757d; font-size: 0.9em; margin-bottom: 5px; }
         .summary-value { font-size: 1.8em; font-weight: 700; color: #212529; font-family: 'Roboto', sans-serif; }
-        .summary-value.highlight { color: #198754; } /* 實績用綠色 */
-
-        /* 圓餅圖容器 */
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            padding: 20px;
-            height: 350px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-
-        /* 其他通用樣式 */
+        .summary-value.highlight { color: #198754; }
+        .chart-container { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px; height: 350px; display: flex; justify-content: center; align-items: center; position: relative; }
         .step-box { width: 25px; height: 12px; background-color: #e9ecef; border-radius: 3px; display:inline-block; margin-right:2px; }
         .step-box.paid { background-color: #198754; } .step-box.pending { background-color: #ffc107; }
         .warranty-badge { cursor: pointer; border: 1px solid #ccc; border-radius: 8px; padding: 4px 8px; min-width: 100px; text-align: center; display: inline-block; margin-right: 5px; margin-bottom: 5px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -54,7 +30,6 @@
         .btn-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 30px; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; }
         .w-done { background: #d1e7dd; color: #0f5132; } .w-safe { background: #e7f1ff; color: #084298; } .w-urgent { background: #fff3cd; color: #856404; border: 1px solid #ffc107; } .w-danger { background: #f8d7da; color: #842029; } 
         .clickable-card { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; background: white; border: 1px solid #eee; } .clickable-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); } .clickable-card:active { transform: scale(0.98); }
-
         /* 篩選按鈕 */
         .filter-group .btn { border-radius: 20px; padding: 5px 15px; font-weight: bold; margin-right: 5px; transition: all 0.3s; }
         .btn-outline-custom-A { color: #dc3545; border-color: #dc3545; } .btn-check:checked + .btn-outline-custom-A { background-color: #dc3545; color: white; }
@@ -62,8 +37,8 @@
         .btn-outline-custom-C { color: #198754; border-color: #198754; } .btn-check:checked + .btn-outline-custom-C { background-color: #198754; color: white; }
         .btn-outline-custom-D { color: #ffc107; border-color: #ffc107; } .btn-check:checked + .btn-outline-custom-D { background-color: #ffc107; color: white; }
         .btn-check:checked + .btn-outline-dark { background-color: #212529; color: white; }
-
         #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .card { border: none; } /* 全局卡片無邊框，靠陰影 */
     </style>
 </head>
 <body>
@@ -74,7 +49,7 @@
 </div>
 
 <nav class="navbar px-3 mb-3 sticky-top">
-    <a class="navbar-brand" href="#"><i class="fas fa-chart-line me-2"></i>工程專案 V10.2</a>
+    <a class="navbar-brand" href="#"><i class="fas fa-check-double me-2"></i>工程專案 V10.3</a>
     <div class="d-flex gap-2">
         <button class="btn btn-sm btn-outline-success fw-bold" onclick="forceReload()"><i class="fas fa-sync-alt"></i></button>
     </div>
@@ -185,7 +160,7 @@
     // ==========================================
 
     let projects = [], goalsData = {}, partsLogs = [], currentIdx = -1, currentWarrantyStepIdx = -1, selectedYearCache = new Date().getFullYear().toString(), showArchivedMode = false, currentFilter = 'ALL';
-    let chartInstance = null; // 圖表實例
+    let chartInstance = null;
 
     async function loadFromCloud() {
         if(API_URL.includes("請在此貼上")) { alert("請設定 API_URL"); hideLoading(); return; }
@@ -210,11 +185,7 @@
     function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
     function forceReload(){loadFromCloud();}
     
-    // --- V10.2 新版數字格式化 (千位分隔) ---
-    function formatWan(n) {
-        return Number(n).toLocaleString('en-US'); // 改為 12,345
-    }
-
+    function formatWan(n) { return Number(n).toLocaleString('en-US'); }
     function filterActive(type) { currentFilter = type; renderActive(); }
 
     function renderActive(){
@@ -246,7 +217,6 @@
         partsLogs.forEach(l=>{ if(l.date&&l.date.startsWith(year)){ let t=l.type||'P'; if(act[t]!==undefined)act[t]+=Number(l.amount); } });
         let gTotal=(g.A+g.B+g.C+g.D)+(g.P||0), aTotal=(act.A+act.B+act.C+act.D)+act.P;
         setTxt('totalGoal',formatWan(gTotal));setTxt('totalActual',formatWan(aTotal));setTxt('totalRate',Math.round((aTotal/gTotal)*100||0)+"%");
-        
         const types=[{t:'A',n:'A案',c:'danger'},{t:'B',n:'B案',c:'primary'},{t:'C',n:'C案',c:'success'},{t:'D',n:'D案',c:'warning'}];
         let html=''; 
         types.forEach(x=>{
@@ -257,16 +227,12 @@
         html+=`<div class="col-12 col-md-4"><div class="card p-3 goal-card clickable-card bg-white border-secondary" onclick="showDrillDown('P', '零件/快速', '${year}')"><div class="d-flex justify-content-between align-items-center"><h6 class="text-secondary fw-bold"><i class="fas fa-bolt"></i> 快速營收 / 零件</h6><button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();openPartsModal()">+ 補登</button></div><div class="d-flex justify-content-between align-items-end mt-2"><h3 class="mb-0 text-dark">${pctP}%</h3><div class="text-end"><small class="text-muted d-block">零件目標 ${formatWan(goalP)}</small><span class="fw-bold text-success" style="font-size:1.2em">${formatWan(valP)}</span></div></div><div class="progress my-2" style="height:8px"><div class="progress-bar bg-secondary" style="width:${Math.min(pctP,100)}%"></div></div></div></div>`;
         document.getElementById('goalCards').innerHTML=html;
         ['A','B','C','D','P'].forEach(t=>{if(document.getElementById('goal'+t))document.getElementById('goal'+t).value=g[t]||0});
-
-        // 呼叫繪製圖表
         renderChart(act);
     }
 
-    // --- V10.2 繪製甜甜圈圖 ---
     function renderChart(act) {
         const ctx = document.getElementById('revenueChart');
-        if (chartInstance) { chartInstance.destroy(); } // 銷毀舊圖表防止重疊
-        
+        if (chartInstance) { chartInstance.destroy(); }
         chartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -274,29 +240,10 @@
                 datasets: [{
                     data: [act.A, act.B, act.C, act.D, act.P],
                     backgroundColor: ['#dc3545', '#0d6efd', '#198754', '#ffc107', '#6c757d'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff',
-                    hoverOffset: 10
+                    borderWidth: 2, borderColor: '#ffffff', hoverOffset: 10
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) { label += ': '; }
-                                if (context.parsed !== null) { label += formatWan(context.parsed); }
-                                return label;
-                            }
-                        }
-                    }
-                },
-                layout: { padding: 10 }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }, tooltip: { callbacks: { label: function(context) { let label = context.label || ''; if (label) { label += ': '; } if (context.parsed !== null) { label += formatWan(context.parsed); } return label; } } } }, layout: { padding: 10 } }
         });
     }
 
@@ -355,8 +302,36 @@
     function saveProject(){ let selectedMode = document.querySelector('input[name="wMode"]:checked').value; let isTrack = document.getElementById('pWarrantyTrack').checked; let hasAcceptDate = document.getElementById('pAcceptDate').value !== ""; let autoArchive = (hasAcceptDate && !isTrack); let obj={ id:document.getElementById('pId').value,name:document.getElementById('pName').value,type:document.getElementById('pType').value,amount:document.getElementById('pAmount').value, contractDate:document.getElementById('pContractDate').value, acceptDate:document.getElementById('pAcceptDate').value, warrantyTrack:isTrack, wMode: selectedMode, payments:currentIdx>=0?projects[currentIdx].payments:[],warrantySteps:currentIdx>=0?projects[currentIdx].warrantySteps:[], isArchived: currentIdx>=0 ? (autoArchive ? true : projects[currentIdx].isArchived) : autoArchive }; let needRegen = false; if(obj.acceptDate && obj.warrantyTrack) { if(!obj.warrantySteps || obj.warrantySteps.length===0) needRegen = true; else { let stepsCount = obj.warrantySteps.length; if(selectedMode === '336' && stepsCount === 1) needRegen = true; if(selectedMode === '1year' && stepsCount === 3) needRegen = true; } } if(needRegen) obj.warrantySteps = generateDefaultWarranty(obj.type, obj.acceptDate, selectedMode); if(currentIdx>=0)projects[currentIdx]=obj;else projects.push(obj); bootstrap.Modal.getInstance(document.getElementById('projectModal')).hide();renderAll(true); }
     function generateDefaultWarranty(type, dStr, mode){ let d=new Date(dStr); function addM(m){let x=new Date(d);x.setMonth(x.getMonth()+m);return x.toISOString().split('T')[0]} if(mode === '336') return [{label:'3個月',scheduled:addM(3),done:false},{label:'6個月',scheduled:addM(6),done:false},{label:'12個月',scheduled:addM(12),done:false}]; if(mode === '1year') return [{label:'1年保固',scheduled:addM(12),done:false}]; return type==='A'?[{label:'3個月',scheduled:addM(3),done:false},{label:'6個月',scheduled:addM(6),done:false},{label:'12個月',scheduled:addM(12),done:false}]:[{label:'1年保固',scheduled:addM(12),done:false}]; }
     function delProject(i){if(confirm("【永久刪除】無法復原！確定嗎？")){projects.splice(i,1);renderAll(true)}}
-    function formatWan(n){return (Number(n)/10000).toFixed(1)+"萬"} // 注意：這裡保留您的舊命名以相容邏輯，但實質內容已改為千分位
-    function initYearSelect(forceYear=null){const select=document.getElementById('yearSelector'),cy=new Date().getFullYear().toString();let years=new Set([cy,(Number(cy)+1).toString()]);projects.forEach(p=>{if(p.contractDate)years.add(p.contractDate.substring(0,4))});partsLogs.forEach(l=>{if(l.date)years.add(l.date.substring(0,4))});Object.keys(goalsData).forEach(y=>years.add(y));if(forceYear)years.add(forceYear);const sorted=Array.from(years).sort().reverse(),old=select.value||selectedYearCache;select.innerHTML='';sorted.forEach(y=>select.innerHTML+=`<option value="${y}">${y}年</option>`);select.value=sorted.includes(old)?old:cy;selectedYearCache=select.value;}
+    
+    // --- V10.3 修正：只顯示4位數年份，過濾掉奇怪的 key ---
+    function initYearSelect(forceYear=null){
+        const select=document.getElementById('yearSelector');
+        const cy=new Date().getFullYear().toString();
+        
+        let years=new Set([cy, (Number(cy)+1).toString()]);
+        
+        projects.forEach(p=>{if(p.contractDate)years.add(p.contractDate.substring(0,4))});
+        partsLogs.forEach(l=>{if(l.date)years.add(l.date.substring(0,4))});
+        
+        // 關鍵修正：只加入看起來像年份 (4個數字) 的 key
+        Object.keys(goalsData).forEach(y => {
+            if(/^\d{4}$/.test(y)) years.add(y);
+        });
+        
+        if(forceYear)years.add(forceYear);
+        
+        const sorted=Array.from(years).sort().reverse();
+        const old=select.value||selectedYearCache;
+        
+        select.innerHTML='';
+        sorted.forEach(y => {
+            select.innerHTML += `<option value="${y}">${y}年</option>`;
+        });
+        
+        select.value = sorted.includes(old) ? old : cy;
+        selectedYearCache = select.value;
+    }
+
     function addNewYear(){const ny=prompt("輸入年份:",(Number(new Date().getFullYear())+1));if(ny&&ny.length===4){if(!goalsData[ny])goalsData[ny]={A:0,B:0,C:0,D:0,P:0};initYearSelect(ny);document.getElementById('yearSelector').value=ny;renderGoals();saveToCloud();new bootstrap.Modal(document.getElementById('goalSettingModal')).show();}}
     function renderAll(save=false){initYearSelect();renderGoals();renderActive();renderWarranty();if(save)saveToCloud();}
     function saveGoals(){const year=document.getElementById('yearSelector').value;['A','B','C','D','P'].forEach(t=>goalsData[year][t]=Number(document.getElementById('goal'+t).value));bootstrap.Modal.getInstance(document.getElementById('goalSettingModal')).hide();renderAll(true);}
