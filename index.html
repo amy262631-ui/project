@@ -3,117 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工程專案管理 V9.7 </title>
+    <title>工程專案管理 V9.8 - 手機雙模版</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif; }
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif; padding-bottom: 60px; }
         .navbar { background: linear-gradient(to right, #1f4037, #99f2c8); }
         .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .nav-tabs .nav-link { color: #6c757d; font-weight: bold; border: none; padding: 12px 20px; }
         .nav-tabs .nav-link.active { color: #1f4037; border-bottom: 3px solid #1f4037; background: transparent; }
-        .step-container { display: flex; gap: 4px; margin-top: 5px; }
-        .step-box { width: 25px; height: 12px; background-color: #e9ecef; border-radius: 3px; border: 1px solid #dee2e6; }
-        .step-box.paid { background-color: #198754; border-color: #198754; } .step-box.pending { background-color: #ffc107; border-color: #ffc107; }
-        .goal-card { height: 100%; transition: transform 0.2s; } .goal-card:hover { transform: translateY(-5px); }
-        .warranty-badge { cursor: pointer; border: 1px solid #ccc; border-radius: 8px; padding: 5px 8px; min-width: 120px; text-align: center; display: inline-block; margin-right: 6px; margin-bottom: 5px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); vertical-align: top; }
-        .w-date { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 2px; }
-        .w-days { font-size: 0.8em; display: block; opacity: 0.9; }
-        .w-done { background-color: #d1e7dd; border-color: #badbcc; color: #0f5132; } 
-        .w-safe { background-color: #e7f1ff; border-color: #b6d4fe; color: #084298; } 
-        .w-urgent { background-color: #fff3cd; border-color: #ffecb5; color: #856404; border: 2px solid #ffc107; animation: pulse 2s infinite; }
-        .w-danger { background-color: #f8d7da; border-color: #f5c2c7; color: #842029; } 
-        @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);} 70% {box-shadow: 0 0 0 6px rgba(255, 193, 7, 0);} 100% {box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);} }
-        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        
+        /* 視覺優化 */
+        .step-box { width: 25px; height: 12px; background-color: #e9ecef; border-radius: 3px; display:inline-block; margin-right:2px; }
+        .step-box.paid { background-color: #198754; } .step-box.pending { background-color: #ffc107; }
+        .warranty-badge { cursor: pointer; border: 1px solid #ccc; border-radius: 8px; padding: 4px 8px; min-width: 100px; text-align: center; display: inline-block; margin-right: 5px; margin-bottom: 5px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        /* 手機版專屬樣式 (Mobile Card) */
+        .mobile-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 5px solid #ccc; }
+        .mobile-card.type-A { border-left-color: #dc3545; }
+        .mobile-card.type-B { border-left-color: #0d6efd; }
+        .mobile-card.type-C { border-left-color: #198754; }
+        .mobile-card.type-D { border-left-color: #ffc107; }
+        .m-label { font-size: 0.85em; color: #888; display: block; margin-bottom: 2px; }
+        .m-value { font-size: 1.1em; font-weight: bold; color: #333; }
+        .btn-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 30px; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; }
+
+        /* 狀態色 */
+        .w-done { background: #d1e7dd; color: #0f5132; } 
+        .w-safe { background: #e7f1ff; color: #084298; } 
+        .w-urgent { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .w-danger { background: #f8d7da; color: #842029; } 
+
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
     <div class="spinner-border text-success" role="status"></div>
-    <div class="mt-3 fw-bold text-success" id="loadingText">正在連線雲端資料庫...</div>
+    <div class="mt-3 fw-bold text-success" id="loadingText">正在連線...</div>
 </div>
 
-<nav class="navbar navbar-dark px-3 mb-3">
-    <a class="navbar-brand" href="#"><i class="fas fa-archive me-2"></i>工程專案管理 V9.7 (歷史封存)</a>
+<nav class="navbar navbar-dark px-3 mb-3 sticky-top shadow-sm">
+    <a class="navbar-brand" href="#"><i class="fas fa-mobile-alt me-2"></i>工程專案 V9.8</a>
     <div class="d-flex gap-2 text-white align-items-center">
-        <small><i class="fas fa-circle text-success me-1" style="font-size:0.5em"></i>已連線</small>
-        <button class="btn btn-outline-light btn-sm ms-2" onclick="forceReload()"><i class="fas fa-sync-alt"></i></button>
+        <button class="btn btn-sm btn-light text-success fw-bold" onclick="forceReload()"><i class="fas fa-sync-alt"></i></button>
     </div>
 </nav>
 
-<div class="container-fluid px-4">
-    <ul class="nav nav-tabs mb-4" id="mainTab" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-goals" onclick="renderGoals()"><i class="fas fa-globe me-2"></i>業績戰情室</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-active"><i class="fas fa-hard-hat me-2"></i>專案執行與請款</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-warranty"><i class="fas fa-wrench me-2"></i>保固維修追蹤</button></li>
+<div class="container-fluid px-2 px-md-4">
+    <ul class="nav nav-tabs mb-3" id="mainTab" role="tablist">
+        <li class="nav-item flex-fill text-center"><button class="nav-link active w-100" data-bs-toggle="tab" data-bs-target="#tab-goals" onclick="renderGoals()">戰情室</button></li>
+        <li class="nav-item flex-fill text-center"><button class="nav-link w-100" data-bs-toggle="tab" data-bs-target="#tab-active">執行中</button></li>
+        <li class="nav-item flex-fill text-center"><button class="nav-link w-100" data-bs-toggle="tab" data-bs-target="#tab-warranty">保固</button></li>
     </ul>
 
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab-goals">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="d-flex align-items-center gap-2">
-                    <h4 class="fw-bold text-dark m-0">年度戰略目標</h4>
-                    <select id="yearSelector" class="form-select form-select-lg fw-bold border-success text-success" style="width: auto;" onchange="renderGoals()"></select>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="addNewYear()" title="新增年份"><i class="fas fa-plus"></i></button>
-                </div>
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#goalSettingModal"><i class="fas fa-edit"></i> 設定目標</button>
-            </div>
-            <div class="card p-4 mb-4 bg-dark text-white">
-                <div class="row text-center">
-                    <div class="col-md-4 border-end border-secondary"><small class="text-white-50"><span class="currentYearText"></span> 總營收 (含回補/零件)</small><h2 class="fw-bold" id="totalGoal">0</h2></div>
-                    <div class="col-md-4 border-end border-secondary"><small class="text-white-50">目前累積總業績</small><h2 class="fw-bold text-warning" id="totalActual">0</h2></div>
-                    <div class="col-md-4"><small class="text-white-50">總達成率</small><h2 class="fw-bold" id="totalRate">0%</h2></div>
+            <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                <select id="yearSelector" class="form-select fw-bold border-success text-success" style="width: auto;" onchange="renderGoals()"></select>
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="addNewYear()"><i class="fas fa-plus"></i></button>
+                    <button class="btn btn-primary btn-sm ms-1" data-bs-toggle="modal" data-bs-target="#goalSettingModal"><i class="fas fa-cog"></i></button>
                 </div>
             </div>
-            <div class="row g-4" id="goalCards"></div>
+            <div class="card p-3 mb-3 bg-dark text-white">
+                <div class="row text-center g-2">
+                    <div class="col-4 border-end border-secondary"><small class="text-white-50">目標</small><div class="fw-bold" id="totalGoal">0</div></div>
+                    <div class="col-4 border-end border-secondary"><small class="text-white-50">實績</small><div class="fw-bold text-warning" id="totalActual">0</div></div>
+                    <div class="col-4"><small class="text-white-50">達成</small><div class="fw-bold" id="totalRate">0%</div></div>
+                </div>
+            </div>
+            <div class="row g-2" id="goalCards"></div>
         </div>
 
         <div class="tab-pane fade" id="tab-active">
-            <div class="card p-4">
-                <div class="d-flex justify-content-between mb-3">
-                    <h5 class="fw-bold text-secondary">執行中案件列表</h5>
-                    <button class="btn btn-primary" onclick="openProjectModal()"><i class="fas fa-plus"></i> 新增專案</button>
-                </div>
-                <table class="table table-hover align-middle">
-                    <thead class="table-light"><tr><th>案號/簽約日</th><th>名稱 / 案型</th><th>請款期數狀態</th><th>金額進度</th><th>操作</th></tr></thead>
-                    <tbody id="activeBody"></tbody>
-                </table>
-                <div id="noActive" class="text-center text-muted py-5" style="display:none">無執行中案件</div>
+            <div class="d-flex justify-content-between mb-3 px-1">
+                <h5 class="fw-bold text-secondary m-0 align-self-center">執行中案件</h5>
+                <button class="btn btn-primary btn-sm" onclick="openProjectModal()"><i class="fas fa-plus"></i> 新增</button>
             </div>
+            
+            <div class="d-none d-md-block card p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light"><tr><th>案號/日期</th><th>名稱</th><th>請款狀態</th><th>進度</th><th>操作</th></tr></thead>
+                    <tbody id="activeBodyDesktop"></tbody>
+                </table>
+            </div>
+
+            <div id="activeBodyMobile" class="d-md-none pb-5"></div>
+            
+            <div id="noActive" class="text-center text-muted py-5" style="display:none">無案件</div>
         </div>
 
         <div class="tab-pane fade" id="tab-warranty">
-            <div class="card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-success"><i class="fas fa-check-circle me-2"></i>保固維修追蹤</h5>
-                    <div>
-                        <button class="btn btn-outline-secondary me-2" onclick="toggleArchived()" id="btnToggleArchive">
-                            <i class="fas fa-folder-open"></i> 查看封存案件
-                        </button>
-                        <button class="btn btn-success" onclick="openProjectModal(-1, true)">
-                            <i class="fas fa-plus"></i> 新增保固案
-                        </button>
-                    </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                <h5 class="fw-bold text-success m-0">保固追蹤</h5>
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm me-1" onclick="toggleArchived()" id="btnToggleArchive"><i class="fas fa-folder"></i></button>
+                    <button class="btn btn-success btn-sm" onclick="openProjectModal(-1, true)"><i class="fas fa-plus"></i></button>
                 </div>
-                <table class="table table-hover align-middle">
-                    <thead class="table-light"><tr><th>案號</th><th>名稱</th><th>結案日</th><th>保固巡檢歷程</th><th>管理</th></tr></thead>
-                    <tbody id="warrantyBody"></tbody>
-                </table>
-                <div id="noWarranty" class="text-center text-muted py-5" style="display:none">無案件</div>
             </div>
+
+            <div class="d-none d-md-block card p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light"><tr><th>案號</th><th>名稱</th><th>結案日</th><th>保固歷程</th><th>管理</th></tr></thead>
+                    <tbody id="warrantyBodyDesktop"></tbody>
+                </table>
+            </div>
+
+            <div id="warrantyBodyMobile" class="d-md-none pb-5"></div>
+
+            <div id="noWarranty" class="text-center text-muted py-5" style="display:none">無案件</div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="projectModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">專案資料</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="projectForm"><div class="row g-3"><div class="col-4"><label>案號</label><input type="text" id="pId" class="form-control" required></div><div class="col-8"><label>名稱</label><input type="text" id="pName" class="form-control" enterkeyhint="done" required></div><div class="col-6 bg-info bg-opacity-10 p-2 rounded"><label class="fw-bold text-primary">簽約日期</label><input type="date" id="pContractDate" class="form-control" required></div><div class="col-6 bg-info bg-opacity-10 p-2 rounded"><label class="fw-bold text-dark">總金額</label><input type="text" inputmode="decimal" id="pAmount" class="form-control" required oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><div class="col-12"><label>案型</label><select id="pType" class="form-select" onchange="autoSelectWarranty()"><option value="A">A案 (800萬+)</option><option value="B">B案</option><option value="C">C案</option><option value="D">D案</option></select></div><div class="col-12 mt-4 border-top pt-3 bg-light rounded p-2"><div class="d-flex justify-content-between align-items-center mb-2"><label class="fw-bold text-danger mb-0">驗收結案日</label><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="pWarrantyTrack" checked><label class="form-check-label small" for="pWarrantyTrack">加入保固追蹤</label></div></div><input type="date" id="pAcceptDate" class="form-control mb-2"><div class="d-flex gap-3 ps-1"><div class="form-check"><input class="form-check-input" type="radio" name="wMode" id="wMode1" value="1year" checked><label class="form-check-label small" for="wMode1">1年保固</label></div><div class="form-check"><input class="form-check-input" type="radio" name="wMode" id="wMode336" value="336"><label class="form-check-label small" for="wMode336">336巡檢</label></div></div></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-primary" onclick="saveProject()">儲存</button></div></div></div></div>
-<div class="modal fade" id="partsModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-secondary text-white"><h5 class="modal-title">⚡ 快速營收 / 零件補登</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="card p-3 bg-light mb-3"><h6>新增一筆</h6><div class="mb-2"><select id="quickType" class="form-select border-primary fw-bold text-primary"><option value="P">🛠️ 零件銷售 (預設)</option><option value="C">🏗️ C案 回補 (快速)</option><option value="D">🔩 D案 回補 (快速)</option><option value="A">🏢 A案 回補</option><option value="B">🔨 B案 回補</option></select></div><div class="input-group mb-2"><span class="input-group-text">日期</span><input type="date" id="partDate" class="form-control"></div><div class="input-group mb-2"><span class="input-group-text">$</span><input type="text" inputmode="decimal" id="partAmount" class="form-control" placeholder="金額" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><input type="text" id="partNote" class="form-control mb-2" enterkeyhint="done" placeholder="備註"><button class="btn btn-success w-100" onclick="addPartLog()">+ 存檔</button></div><h6>明細列表</h6><div style="max-height:200px;overflow-y:auto;"><table class="table table-sm table-striped"><thead class="table-light"><tr><th>類型</th><th>日期</th><th>備註</th><th>金額</th><th></th></tr></thead><tbody id="partLogTable"></tbody></table></div></div></div></div></div>
-<div class="modal fade" id="paymentModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title">請款管理</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex justify-content-between mb-2"><span class="fw-bold">總額: <span id="payTotalDisplay"></span></span><span id="payRemainDisplay"></span></div><div id="paymentRows"></div></div><div class="modal-footer"><button class="btn btn-primary" onclick="savePayments()">儲存</button></div></div></div></div>
-<div class="modal fade" id="goalSettingModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">設定目標</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-2"><label>A案</label><input type="text" inputmode="decimal" id="goalA" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><div class="mb-2"><label>B案</label><input type="text" inputmode="decimal" id="goalB" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><div class="mb-2"><label>C案</label><input type="text" inputmode="decimal" id="goalC" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><div class="mb-2"><label>D案</label><input type="text" inputmode="decimal" id="goalD" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><hr><div class="mb-2 bg-secondary bg-opacity-10 p-2 rounded"><label class="fw-bold">零件目標</label><input type="text" inputmode="decimal" id="goalP" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveGoals()">更新</button></div></div></div></div>
-<div class="modal fade" id="warrantyLogModal" tabindex="-1"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-header"><h6 class="modal-title">實績登記</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><label>預定:</label><span id="logScheduled" class="fw-bold"></span><br><label>實際:</label><input type="date" id="logActualDate" class="form-control"><div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="logDone"><label>已完成</label></div></div><div class="modal-footer"><button class="btn btn-success btn-sm" onclick="saveWarrantyLog()">確認</button></div></div></div></div>
-<div class="modal fade" id="warrantyManageModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">排程管理</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="warrantyEditList"></div><button class="btn btn-sm btn-outline-primary mt-2" onclick="addWarrantyRow()">+新增</button></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveWarrantyPlan()">儲存</button></div></div></div></div>
+<button class="btn btn-primary btn-fab d-md-none" onclick="openProjectModal()" title="快速新增">
+    <i class="fas fa-plus"></i>
+</button>
+
+<div class="modal fade" id="projectModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">專案資料</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="projectForm"><div class="row g-3"><div class="col-4"><label>案號</label><input type="text" id="pId" class="form-control" required></div><div class="col-8"><label>名稱</label><input type="text" id="pName" class="form-control" enterkeyhint="done" required></div><div class="col-6 bg-info bg-opacity-10 p-2 rounded"><label class="fw-bold text-primary">簽約日期</label><input type="date" id="pContractDate" class="form-control" required></div><div class="col-6 bg-info bg-opacity-10 p-2 rounded"><label class="fw-bold text-dark">總金額</label><input type="text" inputmode="decimal" id="pAmount" class="form-control" required oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><div class="col-12"><label>案型</label><select id="pType" class="form-select" onchange="autoSelectWarranty()"><option value="A">A案 (800萬+)</option><option value="B">B案</option><option value="C">C案</option><option value="D">D案</option></select></div><div class="col-12 mt-4 border-top pt-3 bg-light rounded p-2"><div class="d-flex justify-content-between align-items-center mb-2"><label class="fw-bold text-danger mb-0">驗收結案日</label><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="pWarrantyTrack" checked><label class="form-check-label small" for="pWarrantyTrack">加入保固</label></div></div><input type="date" id="pAcceptDate" class="form-control mb-2"><div class="d-flex gap-3 ps-1"><div class="form-check"><input class="form-check-input" type="radio" name="wMode" id="wMode1" value="1year" checked><label class="form-check-label small" for="wMode1">1年保固</label></div><div class="form-check"><input class="form-check-input" type="radio" name="wMode" id="wMode336" value="336"><label class="form-check-label small" for="wMode336">336巡檢</label></div></div></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-primary w-100" onclick="saveProject()">儲存</button></div></div></div></div>
+<div class="modal fade" id="paymentModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title">請款管理</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex justify-content-between mb-2"><span class="fw-bold">總額: <span id="payTotalDisplay"></span></span><span id="payRemainDisplay"></span></div><div id="paymentRows"></div></div><div class="modal-footer"><button class="btn btn-primary w-100" onclick="savePayments()">儲存</button></div></div></div></div>
+<div class="modal fade" id="partsModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-secondary text-white"><h5 class="modal-title">快速營收/零件</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="card p-3 bg-light mb-3"><h6>新增</h6><div class="mb-2"><select id="quickType" class="form-select border-primary fw-bold text-primary"><option value="P">🛠️ 零件銷售</option><option value="C">🏗️ C案回補</option><option value="D">🔩 D案回補</option><option value="A">🏢 A案回補</option><option value="B">🔨 B案回補</option></select></div><div class="input-group mb-2"><span class="input-group-text">日期</span><input type="date" id="partDate" class="form-control"></div><div class="input-group mb-2"><span class="input-group-text">$</span><input type="text" inputmode="decimal" id="partAmount" class="form-control" placeholder="金額" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><input type="text" id="partNote" class="form-control mb-2" enterkeyhint="done" placeholder="備註"><button class="btn btn-success w-100" onclick="addPartLog()">+ 存檔</button></div><div style="max-height:200px;overflow-y:auto;"><table class="table table-sm table-striped"><thead class="table-light"><tr><th>類</th><th>日期</th><th>額</th><th></th></tr></thead><tbody id="partLogTable"></tbody></table></div></div></div></div></div>
+<div class="modal fade" id="goalSettingModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">設定目標</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-2"><label>A案</label><input type="text" inputmode="decimal" id="goalA" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><div class="mb-2"><label>B案</label><input type="text" inputmode="decimal" id="goalB" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><div class="mb-2"><label>C案</label><input type="text" inputmode="decimal" id="goalC" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><div class="mb-2"><label>D案</label><input type="text" inputmode="decimal" id="goalD" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div><hr><div class="mb-2 bg-secondary bg-opacity-10 p-2 rounded"><label class="fw-bold">零件目標</label><input type="text" inputmode="decimal" id="goalP" class="form-control" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div></div><div class="modal-footer"><button class="btn btn-primary w-100" onclick="saveGoals()">更新</button></div></div></div></div>
+<div class="modal fade" id="warrantyLogModal" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h6 class="modal-title">實績登記</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><label>預定:</label><span id="logScheduled" class="fw-bold"></span><br><label>實際:</label><input type="date" id="logActualDate" class="form-control"><div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="logDone"><label>已完成</label></div></div><div class="modal-footer"><button class="btn btn-success btn-sm w-100" onclick="saveWarrantyLog()">確認</button></div></div></div></div>
+<div class="modal fade" id="warrantyManageModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">排程管理</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="warrantyEditList"></div><button class="btn btn-sm btn-outline-primary mt-2 w-100" onclick="addWarrantyRow()">+新增</button></div><div class="modal-footer"><button class="btn btn-primary w-100" onclick="saveWarrantyPlan()">儲存</button></div></div></div></div>
 
 <script>
     // ==========================================
@@ -121,8 +137,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwfbd7yJYGA19jAxV7YBtynRn56UXq_t4jJ-0veoyyT9AKY62CfNNWQB4_ChNY_d9bp/exec"; 
     // ==========================================
 
-    let projects = [], goalsData = {}, partsLogs = [], currentIdx = -1, currentWarrantyStepIdx = -1, selectedYearCache = new Date().getFullYear().toString();
-    let showArchivedMode = false; // 控制是否顯示封存檔案
+    let projects = [], goalsData = {}, partsLogs = [], currentIdx = -1, currentWarrantyStepIdx = -1, selectedYearCache = new Date().getFullYear().toString(), showArchivedMode = false;
 
     async function loadFromCloud() {
         if(API_URL.includes("請在此貼上")) { alert("請設定 API_URL"); hideLoading(); return; }
@@ -146,76 +161,104 @@
     function showLoading(t){document.getElementById('loadingText').innerText=t;document.getElementById('loadingOverlay').style.display='flex';}
     function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
     function forceReload(){loadFromCloud();}
-    
-    // --- 封存邏輯 ---
-    function toggleArchived() {
-        showArchivedMode = !showArchivedMode;
-        const btn = document.getElementById('btnToggleArchive');
-        if(showArchivedMode) {
-            btn.innerHTML = '<i class="fas fa-folder-open"></i> 顯示進行中';
-            btn.className = 'btn btn-secondary me-2';
-        } else {
-            btn.innerHTML = '<i class="fas fa-archive"></i> 查看封存案件';
-            btn.className = 'btn btn-outline-secondary me-2';
-        }
-        renderWarranty();
-    }
 
-    function archiveProject(i) {
-        if(confirm("確定要【封存】此案件嗎？\n它將從列表中消失，但業績金額會保留。\n(可點擊「查看封存案件」找回)")) {
-            projects[i].isArchived = true;
-            saveToCloud(); renderWarranty();
-        }
-    }
-
-    function unarchiveProject(i) {
-        if(confirm("確定要【解封】還原此案件嗎？")) {
-            projects[i].isArchived = false;
-            saveToCloud(); renderWarranty();
-        }
-    }
-
-    // --- 保固渲染 (支援封存過濾 & 解封) ---
-    function renderWarranty(){
-        const tbody=document.getElementById('warrantyBody');tbody.innerHTML='';let count=0;const today=new Date();today.setHours(0,0,0,0);
-        let wProjects = projects.map((p,idx)=>({p, idx})).filter(item => item.p.acceptDate && item.p.warrantyTrack);
+    function renderActive(){
+        const deskT=document.getElementById('activeBodyDesktop'); const mobT=document.getElementById('activeBodyMobile');
+        deskT.innerHTML=''; mobT.innerHTML=''; let count=0;
+        let sorted = [...projects].sort((a,b) => a.type.localeCompare(b.type));
         
-        // 根據封存狀態過濾
-        wProjects = wProjects.filter(item => !!item.p.isArchived === showArchivedMode);
-
-        wProjects.sort((a,b) => { if(a.p.type !== b.p.type) return a.p.type.localeCompare(b.p.type); return a.p.acceptDate.localeCompare(b.p.acceptDate); });
-        
-        wProjects.forEach(item => {
-            let p = item.p; let i = item.idx;
+        sorted.forEach((p,i)=>{
+            let realIdx = projects.indexOf(p);
+            if((p.acceptDate && p.warrantyTrack) || p.isArchived) return;
             count++;
-            let stepsHtml='';
+            
+            // 計算
+            let paidAmt=0, stepHtml=''; if(p.payments) p.payments.forEach(pay=>{ if(pay.isPaid) paidAmt+=Number(pay.amount); if(pay.amount>0||pay.label) stepHtml+=`<span class="step-box ${pay.isPaid?'paid':'pending'}"></span>`; });
+            let pct=Math.round((paidAmt/p.amount)*100)||0; 
+            let badge=p.type==='A'?'bg-danger':(p.type==='B'?'bg-primary':'bg-success');
+            let dateInfo = p.acceptDate ? `<span class="text-danger small">已結案</span>` : `<span class="text-muted small">${p.contractDate}</span>`;
+
+            // 電腦版 (TableRow)
+            deskT.innerHTML+=`<tr><td><b>${p.id}</b><br>${dateInfo}</td><td>${p.name} <span class="badge ${badge}">${p.type}</span></td><td><div class="d-flex align-items-center"><button class="btn btn-warning btn-sm me-2 fw-bold" onclick="openPaymentModal(${realIdx})">$</button><div>${stepHtml}</div></div></td><td><div class="d-flex justify-content-between small"><span>${formatWan(paidAmt)}</span><span>${pct}%</span></div><div class="progress" style="height:6px"><div class="progress-bar bg-success" style="width:${pct}%"></div></div></td><td><button class="btn btn-sm btn-outline-secondary" onclick="openProjectModal(${realIdx})"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="delProject(${realIdx})"><i class="fas fa-trash"></i></button></td></tr>`;
+
+            // 手機版 (Card)
+            mobT.innerHTML+=`
+            <div class="mobile-card type-${p.type}" onclick="openProjectModal(${realIdx})">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="badge ${badge}">${p.type}案</span>
+                    <span class="text-muted small">${p.id}</span>
+                </div>
+                <h5 class="fw-bold mb-1">${p.name}</h5>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <span class="m-label">總金額</span>
+                        <span class="m-value">${formatWan(p.amount)}</span>
+                    </div>
+                    <div class="col-6 text-end">
+                        <span class="m-label">已收 (${pct}%)</span>
+                        <span class="text-success fw-bold">${formatWan(paidAmt)}</span>
+                    </div>
+                </div>
+                <div class="progress my-2" style="height:6px"><div class="progress-bar bg-success" style="width:${pct}%"></div></div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div>${stepHtml}</div>
+                    <div>
+                        <button class="btn btn-warning btn-sm me-1" onclick="event.stopPropagation();openPaymentModal(${realIdx})"><i class="fas fa-dollar-sign"></i> 請款</button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="event.stopPropagation();delProject(${realIdx})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>`;
+        });
+        document.getElementById('noActive').style.display=count===0?'block':'none';
+    }
+
+    function renderWarranty(){
+        const deskT=document.getElementById('warrantyBodyDesktop'); const mobT=document.getElementById('warrantyBodyMobile');
+        deskT.innerHTML=''; mobT.innerHTML=''; let count=0; const today=new Date();today.setHours(0,0,0,0);
+        let wProjects = projects.map((p,idx)=>({p, idx})).filter(item => item.p.acceptDate && item.p.warrantyTrack);
+        wProjects = wProjects.filter(item => !!item.p.isArchived === showArchivedMode);
+        wProjects.sort((a,b) => { if(a.p.type !== b.p.type) return a.p.type.localeCompare(b.p.type); return a.p.acceptDate.localeCompare(b.p.acceptDate); });
+
+        wProjects.forEach(item => {
+            let p = item.p; let i = item.idx; count++;
             if(!p.warrantySteps||p.warrantySteps.length===0) p.warrantySteps=generateDefaultWarranty(p.type,p.acceptDate,p.wMode);
+            
+            // 產生保固步驟 HTML
+            let stepsHtmlDesk='', stepsHtmlMob='';
             p.warrantySteps.forEach((step,idx)=>{
-                let statusClass='w-safe'; let dateStr=step.scheduled; let daysStr='';
-                if(step.done) { statusClass='w-done'; dateStr=`✔ ${step.actual}`; }
+                let statusClass='w-safe', dateStr=step.scheduled, daysStr='';
+                if(step.done) { statusClass='w-done'; dateStr=`✔ ${step.actual}`; daysStr='已完成'; }
                 else {
                     const diff = Math.ceil((new Date(step.scheduled)-today)/(1000*60*60*24));
-                    if(diff<0) { statusClass='w-danger'; daysStr=`(過期 ${Math.abs(diff)} 天)`; }
-                    else if(diff<=30) { statusClass='w-urgent'; daysStr=`(剩 ${diff} 天)`; }
-                    else { daysStr=`(剩 ${diff} 天)`; }
+                    if(diff<0) { statusClass='w-danger'; daysStr=`過期 ${Math.abs(diff)} 天`; }
+                    else if(diff<=30) { statusClass='w-urgent'; daysStr=`剩 ${diff} 天`; }
+                    else { daysStr=`剩 ${diff} 天`; }
                 }
-                stepsHtml+=`<div class="warranty-badge ${statusClass}" onclick="openWarrantyLog(${i},${idx})"><span class="w-date">${step.label}</span><span class="w-days">${dateStr} <br>${daysStr}</span></div>`
+                // 電腦版按鈕
+                stepsHtmlDesk+=`<div class="warranty-badge ${statusClass}" onclick="openWarrantyLog(${i},${idx})"><span class="w-date">${step.label}</span><span class="w-days">${dateStr}<br>${daysStr}</span></div>`;
+                // 手機版按鈕 (更大)
+                stepsHtmlMob+=`<div class="warranty-badge ${statusClass} w-100 mb-2 d-flex justify-content-between align-items-center" onclick="event.stopPropagation();openWarrantyLog(${i},${idx})"><span>${step.label}</span><span class="small">${dateStr} (${daysStr})</span></div>`;
             });
 
-            // 按鈕邏輯區分
-            let actionBtns = '';
-            if (showArchivedMode) {
-                // 封存區：顯示還原 + 刪除
-                actionBtns = `<button class="btn btn-sm btn-secondary me-1" onclick="unarchiveProject(${i})" title="還原"><i class="fas fa-undo"></i></button>
-                              <button class="btn btn-sm btn-outline-danger" onclick="delProject(${i})" title="永久刪除"><i class="fas fa-trash"></i></button>`;
-            } else {
-                // 一般區：顯示管理 + 封存 + 刪除
-                actionBtns = `<button class="btn btn-sm btn-outline-secondary me-1" onclick="openWarrantyManage(${i})">管理</button>
-                              <button class="btn btn-sm btn-outline-secondary me-1" onclick="archiveProject(${i})" title="封存"><i class="fas fa-archive"></i></button>
-                              <button class="btn btn-sm btn-outline-danger" onclick="delProject(${i})" title="刪除"><i class="fas fa-trash"></i></button>`;
-            }
+            // 按鈕區
+            let btns = showArchivedMode ? 
+                `<button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();unarchiveProject(${i})"><i class="fas fa-undo"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation();delProject(${i})"><i class="fas fa-trash"></i></button>` :
+                `<button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();openWarrantyManage(${i})">管</button> <button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();archiveProject(${i})"><i class="fas fa-archive"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation();delProject(${i})"><i class="fas fa-trash"></i></button>`;
 
-            tbody.innerHTML+=`<tr><td>${p.id}</td><td>${p.name}</td><td>${p.acceptDate}</td><td>${stepsHtml}</td><td>${actionBtns}</td></tr>`
+            // 電腦版 Row
+            deskT.innerHTML+=`<tr><td>${p.id}</td><td>${p.name}</td><td>${p.acceptDate}</td><td>${stepsHtmlDesk}</td><td>${btns}</td></tr>`;
+
+            // 手機版 Card
+            mobT.innerHTML+=`
+            <div class="mobile-card type-${p.type}" onclick="openProjectModal(${i})">
+                <div class="d-flex justify-content-between mb-2">
+                    <h5 class="fw-bold mb-0">${p.name}</h5>
+                    <span class="badge bg-secondary">${p.type}案</span>
+                </div>
+                <div class="text-muted small mb-3"><i class="fas fa-flag-checkered"></i> 結案: ${p.acceptDate}</div>
+                <div class="bg-light p-2 rounded mb-3">${stepsHtmlMob}</div>
+                <div class="text-end">${btns}</div>
+            </div>`;
         });
         
         let emptyMsg = showArchivedMode ? "沒有已封存的案件" : "目前沒有保固中的案件";
@@ -223,7 +266,7 @@
         document.getElementById('noWarranty').style.display=count===0?'block':'none';
     }
 
-    // --- 其他渲染與功能 (不變) ---
+    // --- 其他邏輯 (維持不變) ---
     function renderGoals() {
         const year=document.getElementById('yearSelector').value;selectedYearCache=year;
         const setTxt=(id,t)=>{let el=document.getElementById(id);if(el)el.innerText=t};
@@ -236,77 +279,25 @@
         let gTotal=(g.A+g.B+g.C+g.D)+(g.P||0), aTotal=(act.A+act.B+act.C+act.D)+act.P;
         setTxt('totalGoal',formatWan(gTotal));setTxt('totalActual',formatWan(aTotal));setTxt('totalRate',Math.round((aTotal/gTotal)*100||0)+"%");
         const types=[{t:'A',n:'A案',c:'danger'},{t:'B',n:'B案',c:'primary'},{t:'C',n:'C案',c:'success'},{t:'D',n:'D案',c:'warning'}];
-        let html=''; types.forEach(x=>{let val=act[x.t],goal=g[x.t],pct=Math.round((val/goal)*100||0);html+=`<div class="col-md-2 col-sm-6"><div class="card p-3 goal-card border-${x.c}"><h6 class="text-${x.c} fw-bold">${x.n}</h6><div class="d-flex justify-content-between align-items-end"><h4 class="mb-0">${pct}%</h4><small class="text-muted">目標${formatWan(goal)}</small></div><div class="progress my-2" style="height:6px"><div class="progress-bar bg-${x.c}" style="width:${Math.min(pct,100)}%"></div></div><div class="text-end fw-bold small">${formatWan(val)}</div></div></div>`});
+        let html=''; types.forEach(x=>{let val=act[x.t],goal=g[x.t],pct=Math.round((val/goal)*100||0);html+=`<div class="col-6 col-md-2"><div class="card p-2 p-md-3 goal-card border-${x.c}"><h6 class="text-${x.c} fw-bold">${x.n}</h6><div class="d-flex justify-content-between align-items-end"><h4 class="mb-0">${pct}%</h4><small class="text-muted d-none d-md-block">目標${formatWan(goal)}</small></div><div class="progress my-2" style="height:6px"><div class="progress-bar bg-${x.c}" style="width:${Math.min(pct,100)}%"></div></div><div class="text-end fw-bold small">${formatWan(val)}</div></div></div>`});
         let valP=act.P,goalP=g.P||0,pctP=Math.round((valP/goalP)*100||0);
-        html+=`<div class="col-md-4 col-sm-12"><div class="card p-3 goal-card bg-secondary bg-opacity-10 border-secondary"><div class="d-flex justify-content-between align-items-center"><h6 class="text-secondary fw-bold"><i class="fas fa-bolt"></i> 快速營收 / 零件</h6><button class="btn btn-sm btn-outline-secondary" onclick="openPartsModal()">+ 快速補登</button></div><div class="d-flex justify-content-between align-items-end mt-2"><h3 class="mb-0 text-dark">${pctP}%</h3><div class="text-end"><small class="text-muted d-block">零件目標 ${formatWan(goalP)}</small><span class="fw-bold text-success" style="font-size:1.2em">${formatWan(valP)}</span></div></div><div class="progress my-2" style="height:8px"><div class="progress-bar bg-secondary" style="width:${Math.min(pctP,100)}%"></div></div></div></div>`;
+        html+=`<div class="col-12 col-md-4"><div class="card p-3 goal-card bg-secondary bg-opacity-10 border-secondary"><div class="d-flex justify-content-between align-items-center"><h6 class="text-secondary fw-bold"><i class="fas fa-bolt"></i> 快速營收/零件</h6><button class="btn btn-sm btn-outline-secondary" onclick="openPartsModal()">+ 補登</button></div><div class="d-flex justify-content-between align-items-end mt-2"><h3 class="mb-0 text-dark">${pctP}%</h3><div class="text-end"><small class="text-muted d-block">目標 ${formatWan(goalP)}</small><span class="fw-bold text-success" style="font-size:1.2em">${formatWan(valP)}</span></div></div><div class="progress my-2" style="height:8px"><div class="progress-bar bg-secondary" style="width:${Math.min(pctP,100)}%"></div></div></div></div>`;
         document.getElementById('goalCards').innerHTML=html;
         ['A','B','C','D','P'].forEach(t=>{if(document.getElementById('goal'+t))document.getElementById('goal'+t).value=g[t]||0});
     }
 
+    function toggleArchived() { showArchivedMode = !showArchivedMode; const btn = document.getElementById('btnToggleArchive'); if(showArchivedMode) { btn.innerHTML = '<i class="fas fa-folder-open"></i>'; btn.className = 'btn btn-secondary me-2'; } else { btn.innerHTML = '<i class="fas fa-folder"></i>'; btn.className = 'btn btn-outline-secondary me-2'; } renderWarranty(); }
+    function archiveProject(i) { if(confirm("確定封存？(業績保留，列表隱藏)")) { projects[i].isArchived = true; saveToCloud(); renderWarranty(); } }
+    function unarchiveProject(i) { if(confirm("確定解封？")) { projects[i].isArchived = false; saveToCloud(); renderWarranty(); } }
     function openPartsModal(){document.getElementById('partDate').value=new Date().toISOString().split('T')[0];document.getElementById('partAmount').value='';document.getElementById('partNote').value='';document.getElementById('quickType').value='P';renderPartLogTable();new bootstrap.Modal(document.getElementById('partsModal')).show();}
     function addPartLog(){ const d=document.getElementById('partDate').value, a=document.getElementById('partAmount').value, n=document.getElementById('partNote').value, t=document.getElementById('quickType').value; if(d&&a){ partsLogs.push({date:d, amount:a, note:n, type:t, timestamp:new Date().getTime()}); saveToCloud();renderPartLogTable();document.getElementById('partAmount').value='';renderGoals(); } }
-    function renderPartLogTable(){ const year=document.getElementById('yearSelector').value,tbody=document.getElementById('partLogTable');tbody.innerHTML=''; const logs=partsLogs.filter(l=>l.date&&l.date.startsWith(year)).sort((a,b)=>b.date.localeCompare(a.date)); logs.forEach((l,idx)=>{ const originalIdx=partsLogs.indexOf(l); let typeBadge = l.type==='P'?'<span class="badge bg-secondary">零件</span>':`<span class="badge bg-info text-dark">${l.type}案</span>`; tbody.innerHTML+=`<tr><td>${typeBadge}</td><td>${l.date}</td><td>${l.note}</td><td>${Number(l.amount).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="delPartLog(${originalIdx})">&times;</button></td></tr>` }); }
+    function renderPartLogTable(){ const year=document.getElementById('yearSelector').value,tbody=document.getElementById('partLogTable');tbody.innerHTML=''; const logs=partsLogs.filter(l=>l.date&&l.date.startsWith(year)).sort((a,b)=>b.date.localeCompare(a.date)); logs.forEach((l,idx)=>{ const originalIdx=partsLogs.indexOf(l); let typeBadge = l.type==='P'?'<span class="badge bg-secondary">零件</span>':`<span class="badge bg-info text-dark">${l.type}案</span>`; tbody.innerHTML+=`<tr><td>${typeBadge}</td><td>${l.date.slice(5)}</td><td>${Number(l.amount).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="delPartLog(${originalIdx})">&times;</button></td></tr>` }); }
     function delPartLog(idx){if(confirm("確定刪除？")){partsLogs.splice(idx,1);renderPartLogTable();renderGoals();saveToCloud();}}
-
-    function renderActive(){
-        const tbody=document.getElementById('activeBody');tbody.innerHTML='';let count=0;
-        let sortedProjects = [...projects].sort((a,b) => a.type.localeCompare(b.type));
-        sortedProjects.forEach((p,i)=>{
-            let realIdx = projects.indexOf(p);
-            // 執行中列表：不顯示已結案且有保固的，也不顯示已封存的
-            if((p.acceptDate && p.warrantyTrack) || p.isArchived) return;
-            
-            count++;
-            let paidAmt=0,stepHtml='<div class="step-container">';if(p.payments)p.payments.forEach(pay=>{if(pay.isPaid)paidAmt+=Number(pay.amount);if(pay.amount>0||pay.label)stepHtml+=`<div class="step-box ${pay.isPaid?'paid':'pending'}" title="${pay.label}"></div>`});stepHtml+='</div>';let pct=Math.round((paidAmt/p.amount)*100)||0;let badge=p.type==='A'?'bg-danger':(p.type==='B'?'bg-primary':'bg-success');
-            let dateInfo = p.acceptDate ? `<br><small class="text-danger">已結案(無保固)</small>` : `<br><small class="text-muted">${p.contractDate}</small>`;
-            tbody.innerHTML+=`<tr><td><b>${p.id}</b>${dateInfo}</td><td>${p.name} <span class="badge ${badge}">${p.type}</span></td><td><div class="d-flex align-items-center"><button class="btn btn-warning btn-sm me-2 fw-bold" onclick="openPaymentModal(${realIdx})">$</button><div>${stepHtml}</div></div></td><td><div class="d-flex justify-content-between small"><span>${formatWan(paidAmt)}</span><span>${pct}%</span></div><div class="progress" style="height:6px"><div class="progress-bar bg-success" style="width:${pct}%"></div></div></td><td><button class="btn btn-sm btn-outline-secondary" onclick="openProjectModal(${realIdx})"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="delProject(${realIdx})"><i class="fas fa-trash"></i></button></td></tr>`
-        });
-        document.getElementById('noActive').style.display=count===0?'block':'none';
-    }
-
     function autoSelectWarranty(){ const t = document.getElementById('pType').value; if(t === 'A') document.getElementById('wMode336').checked = true; else document.getElementById('wMode1').checked = true; }
-    function openProjectModal(i=-1,isWarranty=false){
-        currentIdx=i;document.getElementById('projectForm').reset();
-        let today=new Date().toISOString().split('T')[0];document.getElementById('pContractDate').value=today;
-        document.getElementById('pWarrantyTrack').checked = true;
-        document.getElementById('wMode1').checked = true; 
-        if(i===-1&&isWarranty)document.getElementById('pAcceptDate').value=today;
-        if(i>=0){
-            let p=projects[i];document.getElementById('pId').value=p.id;document.getElementById('pName').value=p.name;document.getElementById('pType').value=p.type;document.getElementById('pAmount').value=p.amount;document.getElementById('pContractDate').value=p.contractDate||'';document.getElementById('pAcceptDate').value=p.acceptDate||p.date||'';
-            document.getElementById('pWarrantyTrack').checked = (p.warrantyTrack !== false);
-            if(p.wMode === '336') document.getElementById('wMode336').checked = true; else document.getElementById('wMode1').checked = true;
-        } else { autoSelectWarranty(); }
-        new bootstrap.Modal(document.getElementById('projectModal')).show();
-    }
-    function saveProject(){
-        let selectedMode = document.querySelector('input[name="wMode"]:checked').value;
-        let obj={
-            id:document.getElementById('pId').value,name:document.getElementById('pName').value,type:document.getElementById('pType').value,amount:document.getElementById('pAmount').value,
-            contractDate:document.getElementById('pContractDate').value,
-            acceptDate:document.getElementById('pAcceptDate').value,
-            warrantyTrack:document.getElementById('pWarrantyTrack').checked, wMode: selectedMode,
-            payments:currentIdx>=0?projects[currentIdx].payments:[],warrantySteps:currentIdx>=0?projects[currentIdx].warrantySteps:[], isArchived: currentIdx>=0?projects[currentIdx].isArchived:false
-        };
-        let needRegen = false;
-        if(obj.acceptDate && obj.warrantyTrack) {
-            if(!obj.warrantySteps || obj.warrantySteps.length===0) needRegen = true;
-            else {
-                let stepsCount = obj.warrantySteps.length;
-                if(selectedMode === '336' && stepsCount === 1) needRegen = true;
-                if(selectedMode === '1year' && stepsCount === 3) needRegen = true;
-            }
-        }
-        if(needRegen) obj.warrantySteps = generateDefaultWarranty(obj.type, obj.acceptDate, selectedMode);
-        if(currentIdx>=0)projects[currentIdx]=obj;else projects.push(obj);
-        bootstrap.Modal.getInstance(document.getElementById('projectModal')).hide();renderAll(true);
-    }
-    function generateDefaultWarranty(type, dStr, mode){
-        let d=new Date(dStr); function addM(m){let x=new Date(d);x.setMonth(x.getMonth()+m);return x.toISOString().split('T')[0]}
-        if(mode === '336') return [{label:'3個月',scheduled:addM(3),done:false},{label:'6個月',scheduled:addM(6),done:false},{label:'12個月',scheduled:addM(12),done:false}];
-        if(mode === '1year') return [{label:'1年保固',scheduled:addM(12),done:false}];
-        return type==='A'?[{label:'3個月',scheduled:addM(3),done:false},{label:'6個月',scheduled:addM(6),done:false},{label:'12個月',scheduled:addM(12),done:false}]:[{label:'1年保固',scheduled:addM(12),done:false}];
-    }
-    function delProject(i){if(confirm("【永久刪除警告】\n刪除後無法復原，且會扣除業績！\n\n(若只想隱藏舊資料，請按「封存」)")){projects.splice(i,1);renderAll(true)}}
+    function openProjectModal(i=-1,isWarranty=false){ currentIdx=i;document.getElementById('projectForm').reset(); let today=new Date().toISOString().split('T')[0];document.getElementById('pContractDate').value=today; document.getElementById('pWarrantyTrack').checked = true; document.getElementById('wMode1').checked = true; if(i===-1&&isWarranty)document.getElementById('pAcceptDate').value=today; if(i>=0){ let p=projects[i];document.getElementById('pId').value=p.id;document.getElementById('pName').value=p.name;document.getElementById('pType').value=p.type;document.getElementById('pAmount').value=p.amount;document.getElementById('pContractDate').value=p.contractDate||'';document.getElementById('pAcceptDate').value=p.acceptDate||p.date||''; document.getElementById('pWarrantyTrack').checked = (p.warrantyTrack !== false); if(p.wMode === '336') document.getElementById('wMode336').checked = true; else document.getElementById('wMode1').checked = true; } else { autoSelectWarranty(); } new bootstrap.Modal(document.getElementById('projectModal')).show(); }
+    function saveProject(){ let selectedMode = document.querySelector('input[name="wMode"]:checked').value; let obj={ id:document.getElementById('pId').value,name:document.getElementById('pName').value,type:document.getElementById('pType').value,amount:document.getElementById('pAmount').value, contractDate:document.getElementById('pContractDate').value, acceptDate:document.getElementById('pAcceptDate').value, warrantyTrack:document.getElementById('pWarrantyTrack').checked, wMode: selectedMode, payments:currentIdx>=0?projects[currentIdx].payments:[],warrantySteps:currentIdx>=0?projects[currentIdx].warrantySteps:[], isArchived: currentIdx>=0?projects[currentIdx].isArchived:false }; let needRegen = false; if(obj.acceptDate && obj.warrantyTrack) { if(!obj.warrantySteps || obj.warrantySteps.length===0) needRegen = true; else { let stepsCount = obj.warrantySteps.length; if(selectedMode === '336' && stepsCount === 1) needRegen = true; if(selectedMode === '1year' && stepsCount === 3) needRegen = true; } } if(needRegen) obj.warrantySteps = generateDefaultWarranty(obj.type, obj.acceptDate, selectedMode); if(currentIdx>=0)projects[currentIdx]=obj;else projects.push(obj); bootstrap.Modal.getInstance(document.getElementById('projectModal')).hide();renderAll(true); }
+    function generateDefaultWarranty(type, dStr, mode){ let d=new Date(dStr); function addM(m){let x=new Date(d);x.setMonth(x.getMonth()+m);return x.toISOString().split('T')[0]} if(mode === '336') return [{label:'3個月',scheduled:addM(3),done:false},{label:'6個月',scheduled:addM(6),done:false},{label:'12個月',scheduled:addM(12),done:false}]; if(mode === '1year') return [{label:'1年保固',scheduled:addM(12),done:false}]; return type==='A'?[{label:'3個月',scheduled:addM(3),done:false},{label:'6個月',scheduled:addM(6),done:false},{label:'12個月',scheduled:addM(12),done:false}]:[{label:'1年保固',scheduled:addM(12),done:false}]; }
+    function delProject(i){if(confirm("【永久刪除】無法復原！確定嗎？")){projects.splice(i,1);renderAll(true)}}
     function formatWan(n){return (Number(n)/10000).toFixed(1)+"萬"}
     function initYearSelect(forceYear=null){const select=document.getElementById('yearSelector'),cy=new Date().getFullYear().toString();let years=new Set([cy,(Number(cy)+1).toString()]);projects.forEach(p=>{if(p.contractDate)years.add(p.contractDate.substring(0,4))});partsLogs.forEach(l=>{if(l.date)years.add(l.date.substring(0,4))});Object.keys(goalsData).forEach(y=>years.add(y));if(forceYear)years.add(forceYear);const sorted=Array.from(years).sort().reverse(),old=select.value||selectedYearCache;select.innerHTML='';sorted.forEach(y=>select.innerHTML+=`<option value="${y}">${y}年</option>`);select.value=sorted.includes(old)?old:cy;selectedYearCache=select.value;}
     function addNewYear(){const ny=prompt("輸入年份:",(Number(new Date().getFullYear())+1));if(ny&&ny.length===4){if(!goalsData[ny])goalsData[ny]={A:0,B:0,C:0,D:0,P:0};initYearSelect(ny);document.getElementById('yearSelector').value=ny;renderGoals();saveToCloud();new bootstrap.Modal(document.getElementById('goalSettingModal')).show();}}
