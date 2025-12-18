@@ -57,7 +57,7 @@
                     <select id="yearSelector" class="form-select form-select-lg fw-bold border-primary text-primary" style="width: auto;" onchange="renderGoals()"></select>
                     <button class="btn btn-outline-secondary btn-sm" onclick="addNewYear()" title="新增年份"><i class="fas fa-plus"></i></button>
                 </div>
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#goalSettingModal"><i class="fas fa-edit"></i> 設定目標</button>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#goalSettingModal"><i class="fas fa-edit"></i> 設定 <span id="targetYearLabel"></span>年 目標</button>
             </div>
             <div class="card p-4 mb-4 bg-dark text-white">
                 <div class="row text-center">
@@ -160,7 +160,10 @@
             goalsData = data.g || { "2025": { A: 1.2e8, B: 1e7, C: 5e6, D: 5e6, P: 1e6 } };
             partsLogs = data.pl || []; // 讀取零件日誌
             renderAll(false);
-        } catch (e) { alert("連線失敗\n" + e); }
+        } catch (e) { 
+            console.error(e);
+            alert("連線失敗\n請確認您的網址是否正確"); 
+        }
         hideLoading();
     }
 
@@ -216,9 +219,13 @@
     function renderGoals() {
         const year = document.getElementById('yearSelector').value;
         selectedYearCache = year;
+        
+        // 安全檢查，防止元素不存在報錯
+        const setTxt = (id, txt) => { let el = document.getElementById(id); if(el) el.innerText = txt; };
+        
         document.querySelectorAll('.currentYearText').forEach(el => el.innerText = year);
-        document.getElementById('targetYearLabel').innerText = year;
-        document.getElementById('modalYearLabel').innerText = year;
+        setTxt('targetYearLabel', year);
+        setTxt('modalYearLabel', year);
 
         if(!goalsData[year]) goalsData[year] = { A:0, B:0, C:0, D:0, P:0 };
         const g = goalsData[year];
@@ -233,9 +240,9 @@
         let gTotal = (g.A+g.B+g.C+g.D) + (g.P||0); // 加零件目標
         let aTotal = (act.A+act.B+act.C+act.D) + act.P; // 加零件實績
         
-        document.getElementById('totalGoal').innerText = formatWan(gTotal);
-        document.getElementById('totalActual').innerText = formatWan(aTotal);
-        document.getElementById('totalRate').innerText = Math.round((aTotal/gTotal)*100 || 0) + "%";
+        setTxt('totalGoal', formatWan(gTotal));
+        setTxt('totalActual', formatWan(aTotal));
+        setTxt('totalRate', Math.round((aTotal/gTotal)*100 || 0) + "%");
 
         // 渲染 A-D 卡片
         const types = [ {t:'A',n:'A案',c:'danger'}, {t:'B',n:'B案',c:'primary'}, {t:'C',n:'C案',c:'success'}, {t:'D',n:'D案',c:'warning'} ];
@@ -245,7 +252,7 @@
             html += `<div class="col-md-2 col-sm-6"><div class="card p-3 goal-card border-${x.c}"><h6 class="text-${x.c} fw-bold">${x.n}</h6><div class="d-flex justify-content-between align-items-end"><h4 class="mb-0">${pct}%</h4><small class="text-muted">目標${formatWan(goal)}</small></div><div class="progress my-2" style="height:6px"><div class="progress-bar bg-${x.c}" style="width:${Math.min(pct,100)}%"></div></div><div class="text-end fw-bold small">${formatWan(val)}</div></div></div>`;
         });
 
-        // 渲染 零件 卡片 (獨立設計)
+        // 渲染 零件 卡片
         let valP = act.P, goalP = g.P || 0, pctP = Math.round((valP/goalP)*100 || 0);
         html += `
         <div class="col-md-4 col-sm-12">
