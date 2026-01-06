@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工程專案管理 V10.4 - 終極修正版</title>
+    <title>工程專案管理 V10.4.1 - D案修正版</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -64,7 +64,7 @@
 </div>
 
 <nav class="navbar px-3 mb-3 sticky-top">
-    <a class="navbar-brand" href="#"><i class="fas fa-hammer me-2"></i>工程專案 V10.4</a>
+    <a class="navbar-brand" href="#"><i class="fas fa-hammer me-2"></i>工程專案 V10.4.1</a>
     <div class="d-flex gap-2">
         <button class="btn btn-sm btn-outline-success fw-bold" onclick="forceReload()"><i class="fas fa-sync-alt"></i></button>
     </div>
@@ -171,7 +171,7 @@
 
 <script>
     // ==========================================
-    // ▼ 請貼上您的 Google App Script 網址 ▼
+    // ▼ 這裡保留了您的 API 網址，直接使用即可 ▼
     const API_URL = "https://script.google.com/macros/s/AKfycbwfbd7yJYGA19jAxV7YBtynRn56UXq_t4jJ-0veoyyT9AKY62CfNNWQB4_ChNY_d9bp/exec"; 
     // ==========================================
 
@@ -204,7 +204,7 @@
     function formatWan(n) { return Number(n).toLocaleString('en-US'); }
     function filterActive(type) { currentFilter = type; renderActive(); }
 
-    // --- V10.4 修正：renderActive 內的標籤顏色 ---
+    // --- V10.4.1 D案黃色修正 ---
     function renderActive(){
         const deskT=document.getElementById('activeBodyDesktop'); const mobT=document.getElementById('activeBodyMobile');
         deskT.innerHTML=''; mobT.innerHTML=''; let count=0;
@@ -220,10 +220,10 @@
             // --- 顏色修正區 ---
             let badge = '';
             switch(p.type) {
-                case 'A': badge = 'badge bg-danger'; break; // 紅
-                case 'B': badge = 'badge bg-primary'; break; // 藍
-                case 'C': badge = 'badge bg-success'; break; // 綠
-                case 'D': badge = 'badge bg-warning text-dark'; break; // 黃 (加黑字)
+                case 'A': badge = 'badge bg-danger'; break;
+                case 'B': badge = 'badge bg-primary'; break;
+                case 'C': badge = 'badge bg-success'; break;
+                case 'D': badge = 'badge bg-warning text-dark'; break; // 黃色修正
                 default: badge = 'badge bg-secondary';
             }
             
@@ -236,15 +236,24 @@
 
     function renderGoals() {
         const year=document.getElementById('yearSelector').value;selectedYearCache=year;
+        
+        // --- 修正 Null Error: 安全檢查 ---
         const setTxt=(id,t)=>{let el=document.getElementById(id);if(el)el.innerText=t};
-        document.querySelectorAll('.currentYearText').forEach(el=>el.innerText=year);setTxt('targetYearLabel',year);
+        
+        document.querySelectorAll('.currentYearText').forEach(el=>el.innerText=year);
+        setTxt('targetYearLabel',year);
+        
         if(!goalsData[year])goalsData[year]={A:0,B:0,C:0,D:0,P:0};
         const g=goalsData[year];
         let act={A:0,B:0,C:0,D:0,P:0};
         projects.forEach(p=>{if(p.contractDate&&p.contractDate.startsWith(year))act[p.type]+=Number(p.amount)});
         partsLogs.forEach(l=>{ if(l.date&&l.date.startsWith(year)){ let t=l.type||'P'; if(act[t]!==undefined)act[t]+=Number(l.amount); } });
         let gTotal=(g.A+g.B+g.C+g.D)+(g.P||0), aTotal=(act.A+act.B+act.C+act.D)+act.P;
-        setTxt('totalGoal',formatWan(gTotal));setTxt('totalActual',formatWan(aTotal));setTxt('totalRate',Math.round((aTotal/gTotal)*100||0)+"%");
+        
+        setTxt('totalGoal',formatWan(gTotal));
+        setTxt('totalActual',formatWan(aTotal));
+        setTxt('totalRate',Math.round((aTotal/gTotal)*100||0)+"%");
+        
         const types=[{t:'A',n:'A案',c:'danger'},{t:'B',n:'B案',c:'primary'},{t:'C',n:'C案',c:'success'},{t:'D',n:'D案',c:'warning'}];
         let html=''; 
         types.forEach(x=>{
@@ -252,14 +261,18 @@
             html+=`<div class="col-6 col-md-2"><div class="card p-2 p-md-3 goal-card clickable-card border-${x.c}" onclick="showDrillDown('${x.t}', '${x.n}', '${year}')"><h6 class="text-${x.c} fw-bold">${x.n}</h6><div class="d-flex justify-content-between align-items-end"><h4 class="mb-0">${pct}%</h4><small class="text-muted d-none d-md-block">目標${formatWan(goal)}</small></div><div class="progress my-2" style="height:6px"><div class="progress-bar bg-${x.c}" style="width:${Math.min(pct,100)}%"></div></div><div class="text-end fw-bold small">${formatWan(val)}</div></div></div>`;
         });
         let valP=act.P,goalP=g.P||0,pctP=Math.round((valP/goalP)*100||0);
-        html+=`<div class="col-12 col-md-4"><div class="card p-3 goal-card clickable-card bg-white border-secondary" onclick="showDrillDown('P', '零件/快速', '${year}')"><div class="d-flex justify-content-between align-items-center"><h6 class="text-secondary fw-bold"><i class="fas fa-bolt"></i> 快速營收 / 零件</h6><button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();openPartsModal()">+ 補登</button></div><div class="d-flex justify-content-between align-items-end mt-2"><h3 class="mb-0 text-dark">${pctP}%</h3><div class="text-end"><small class="text-muted d-block">零件目標 ${formatWan(goalP)}</small><span class="fw-bold text-success" style="font-size:1.2em">${formatWan(valP)}</span></div></div><div class="progress my-2" style="height:8px"><div class="progress-bar bg-secondary" style="width:${Math.min(pctP,100)}%"></div></div></div></div>`;
-        document.getElementById('goalCards').innerHTML=html;
+        html+=`<div class="col-12 col-md-4"><div class="card p-3 goal-card clickable-card bg-white border-secondary" onclick="showDrillDown('P', '零件/快速', '${year}')"><div class="d-flex justify-content-between align-items-center"><h6 class="text-secondary fw-bold"><i class="fas fa-bolt"></i> 快速營收 / 零件</h6><button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();openPartsModal()">+ 補登</button></div><div class="d-flex justify-content-between align-items-end mt-2"><h3 class="mb-0 text-dark clickable-card" onclick="showDrillDown('P', '零件/快速', '${year}')">${pctP}%</h3><div class="text-end"><small class="text-muted d-block">零件目標 ${formatWan(goalP)}</small><span class="fw-bold text-success" style="font-size:1.2em">${formatWan(valP)}</span></div></div><div class="progress my-2" style="height:8px"><div class="progress-bar bg-secondary" style="width:${Math.min(pctP,100)}%"></div></div></div></div>`;
+        
+        let gc = document.getElementById('goalCards');
+        if(gc) gc.innerHTML=html;
+        
         ['A','B','C','D','P'].forEach(t=>{if(document.getElementById('goal'+t))document.getElementById('goal'+t).value=g[t]||0});
         renderChart(act);
     }
 
     function renderChart(act) {
         const ctx = document.getElementById('revenueChart');
+        if(!ctx) return; // 安全檢查
         if (chartInstance) { chartInstance.destroy(); }
         chartInstance = new Chart(ctx, {
             type: 'doughnut',
@@ -310,17 +323,22 @@
                     stepsHtmlMob+=`<div class="warranty-badge ${statusClass} w-100 mb-2 d-flex justify-content-between align-items-center" onclick="event.stopPropagation();openWarrantyLog(${i},${idx})"><span>${step.label}</span><span class="small">${dateStr} (${daysStr})</span></div>`;
                 });
             }
-            let btns = showArchivedMode ? `<button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();unarchiveProject(${i})" title="解封"><i class="fas fa-undo"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation();delProject(${i})"><i class="fas fa-trash"></i></button>` : `<button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();openWarrantyManage(${i})">管</button> <button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();archiveProject(${i})" title="封存"><i class="fas fa-archive"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation();delProject(${i})"><i class="fas fa-trash"></i></button>`;
+            let btns = showArchivedMode ? 
+                `<button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();unarchiveProject(${i})" title="解封"><i class="fas fa-undo"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation();delProject(${i})"><i class="fas fa-trash"></i></button>` : 
+                `<button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();openWarrantyManage(${i})">管</button> <button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();archiveProject(${i})" title="封存"><i class="fas fa-archive"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation();delProject(${i})"><i class="fas fa-trash"></i></button>`;
+            
             deskT.innerHTML+=`<tr><td>${p.id}</td><td>${p.name}</td><td>${p.acceptDate}</td><td>${stepsHtmlDesk}</td><td>${btns}</td></tr>`;
             mobT.innerHTML+=`<div class="mobile-card type-${p.type}" onclick="openProjectModal(${i})"><div class="d-flex justify-content-between mb-2"><h5 class="fw-bold mb-0">${p.name}</h5><span class="badge bg-secondary">${p.type}案</span></div><div class="text-muted small mb-3"><i class="fas fa-flag-checkered"></i> 結案: ${p.acceptDate}</div><div class="bg-light p-2 rounded mb-3">${stepsHtmlMob}</div><div class="text-end">${btns}</div></div>`;
         });
-        document.getElementById('noWarranty').innerText = showArchivedMode ? "沒有封存案件" : "沒有保固中案件";
-        document.getElementById('noWarranty').style.display=count===0?'block':'none';
+        
+        let emptyMsg = showArchivedMode ? "沒有封存案件" : "沒有保固中案件";
+        let noW = document.getElementById('noWarranty');
+        if(noW) { noW.innerText = emptyMsg; noW.style.display=count===0?'block':'none'; }
     }
 
     function toggleArchived() { showArchivedMode = !showArchivedMode; const btn = document.getElementById('btnToggleArchive'); document.getElementById('warrantyTitle').innerText = showArchivedMode ? "封存案件 (含無保固)" : "保固追蹤"; if(showArchivedMode) { btn.innerHTML = '<i class="fas fa-folder-open"></i>'; btn.className = 'btn btn-secondary me-1'; } else { btn.innerHTML = '<i class="fas fa-folder"></i>'; btn.className = 'btn btn-outline-secondary me-1'; } renderWarranty(); }
     function archiveProject(i) { if(confirm("封存後將移至封存區，業績保留。")) { projects[i].isArchived = true; saveToCloud(); renderWarranty(); } }
-    function unarchiveProject(i) { if(confirm("確定解封？")) { projects[i].isArchived = false; saveToCloud(); renderWarranty(); } }
+    function unarchiveProject(i) { if(confirm("確定解封？(案件將回到保固列表)")) { projects[i].isArchived = false; projects[i].warrantyTrack = true; if(!projects[i].warrantySteps || projects[i].warrantySteps.length === 0) { projects[i].warrantySteps = generateDefaultWarranty(projects[i].type, projects[i].acceptDate, projects[i].wMode); } saveToCloud(); renderWarranty(); alert("已解封！案件已回到「保固維修追蹤」列表。"); } }
     function openPartsModal(){document.getElementById('partDate').value=new Date().toISOString().split('T')[0];document.getElementById('partAmount').value='';document.getElementById('partNote').value='';document.getElementById('quickType').value='P';renderPartLogTable();new bootstrap.Modal(document.getElementById('partsModal')).show();}
     function addPartLog(){ const d=document.getElementById('partDate').value, a=document.getElementById('partAmount').value, n=document.getElementById('partNote').value, t=document.getElementById('quickType').value; if(d&&a){ partsLogs.push({date:d, amount:a, note:n, type:t, timestamp:new Date().getTime()}); saveToCloud();renderPartLogTable();document.getElementById('partAmount').value='';renderGoals(); } }
     function renderPartLogTable(){ const year=document.getElementById('yearSelector').value,tbody=document.getElementById('partLogTable');tbody.innerHTML=''; const logs=partsLogs.filter(l=>l.date&&l.date.startsWith(year)).sort((a,b)=>b.date.localeCompare(a.date)); logs.forEach((l,idx)=>{ const originalIdx=partsLogs.indexOf(l); let typeBadge = l.type==='P'?'<span class="badge bg-secondary">零件</span>':`<span class="badge bg-info text-dark">${l.type}案</span>`; tbody.innerHTML+=`<tr><td>${typeBadge}</td><td>${l.date.slice(5)}</td><td>${Number(l.amount).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="delPartLog(${originalIdx})">&times;</button></td></tr>` }); }
@@ -335,7 +353,6 @@
         let years=new Set([cy, (Number(cy)+1).toString()]);
         projects.forEach(p=>{if(p.contractDate)years.add(p.contractDate.substring(0,4))});
         partsLogs.forEach(l=>{if(l.date)years.add(l.date.substring(0,4))});
-        // 嚴格過濾：只加入 4 位數年份
         Object.keys(goalsData).forEach(y => { if(/^\d{4}$/.test(y)) years.add(y); });
         if(forceYear)years.add(forceYear);
         const sorted=Array.from(years).sort().reverse();
