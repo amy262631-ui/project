@@ -304,11 +304,11 @@
                 </div>
             </div>
 
-            <!-- 新增：月度累計成交金額堆疊長條圖 -->
+            <!-- 新增:月度成交金額堆疊長條圖 -->
             <div class="row">
                 <div class="col-12">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold text-secondary mb-0"><i class="fas fa-chart-bar me-2"></i>月度累計成交金額</h5>
+                        <h5 class="fw-bold text-secondary mb-0"><i class="fas fa-chart-bar me-2"></i>月度成交金額</h5>
                         <button class="btn btn-success btn-sm" onclick="downloadMonthlyChart()">
                             <i class="fas fa-download me-1"></i>下載 JPG
                         </button>
@@ -808,22 +808,22 @@
         });
     }
 
-    // 新增：月度累計成交金額堆疊長條圖
+    // 新增:月度成交金額堆疊長條圖(非累計)
     function renderMonthlyChart(year) {
         const ctx = document.getElementById('monthlyRevenueChart');
         if(!ctx) return;
 
-        // 計算每月每種類型的累計金額
+        // 計算每月每種類型的成交金額(非累計)
         let monthlyData = {};
         for(let m = 1; m <= 12; m++) {
-            monthlyData[m] = {A: 0, B: 0, C: 0, D: 0};
+            monthlyData[m] = {A: 0, B: 0, C: 0, D: 0, P: 0};
         }
 
         // 統計專案資料
         projects.forEach(p => {
             if(p.contractDate && p.contractDate.startsWith(year)) {
                 let month = parseInt(p.contractDate.split('-')[1]);
-                if(monthlyData[month] && p.type !== 'P') {
+                if(monthlyData[month] && ['A','B','C','D'].includes(p.type)) {
                     monthlyData[month][p.type] += Number(p.amount);
                 }
             }
@@ -834,32 +834,25 @@
             if(l.date && l.date.startsWith(year)) {
                 let month = parseInt(l.date.split('-')[1]);
                 let t = l.type || 'P';
-                if(monthlyData[month] && t !== 'P') {
+                if(monthlyData[month] && ['A','B','C','D','P'].includes(t)) {
                     monthlyData[month][t] += Number(l.amount);
                 }
             }
         });
 
-        // 計算累計
-        let cumulativeData = {A: [], B: [], C: [], D: []};
-        let cumA = 0, cumB = 0, cumC = 0, cumD = 0;
+        // 準備圖表數據(每月獨立,非累計)
+        let chartData = {A: [], B: [], C: [], D: [], P: []};
+        let monthlyTotals = [];
         
         for(let m = 1; m <= 12; m++) {
-            cumA += monthlyData[m].A;
-            cumB += monthlyData[m].B;
-            cumC += monthlyData[m].C;
-            cumD += monthlyData[m].D;
+            chartData.A.push(monthlyData[m].A);
+            chartData.B.push(monthlyData[m].B);
+            chartData.C.push(monthlyData[m].C);
+            chartData.D.push(monthlyData[m].D);
+            chartData.P.push(monthlyData[m].P);
             
-            cumulativeData.A.push(cumA);
-            cumulativeData.B.push(cumB);
-            cumulativeData.C.push(cumC);
-            cumulativeData.D.push(cumD);
-        }
-
-        // 計算每月總額用於顯示在柱狀圖上方
-        let monthlyTotals = [];
-        for(let m = 1; m <= 12; m++) {
-            monthlyTotals.push(cumulativeData.A[m-1] + cumulativeData.B[m-1] + cumulativeData.C[m-1] + cumulativeData.D[m-1]);
+            let total = monthlyData[m].A + monthlyData[m].B + monthlyData[m].C + monthlyData[m].D + monthlyData[m].P;
+            monthlyTotals.push(total);
         }
 
         if (monthlyChartInstance) {
@@ -873,26 +866,32 @@
                 datasets: [
                     {
                         label: 'A案',
-                        data: cumulativeData.A,
+                        data: chartData.A,
                         backgroundColor: '#dc3545',
                         borderWidth: 0
                     },
                     {
                         label: 'B案',
-                        data: cumulativeData.B,
+                        data: chartData.B,
                         backgroundColor: '#0d6efd',
                         borderWidth: 0
                     },
                     {
                         label: 'C案',
-                        data: cumulativeData.C,
+                        data: chartData.C,
                         backgroundColor: '#198754',
                         borderWidth: 0
                     },
                     {
                         label: 'D案',
-                        data: cumulativeData.D,
+                        data: chartData.D,
                         backgroundColor: '#ffc107',
+                        borderWidth: 0
+                    },
+                    {
+                        label: '零件/快速',
+                        data: chartData.P,
+                        backgroundColor: '#6c757d',
                         borderWidth: 0
                     }
                 ]
@@ -942,7 +941,7 @@
                                 tooltipItems.forEach(function(tooltipItem) {
                                     total += tooltipItem.parsed.y;
                                 });
-                                return '累計總額: ' + formatWan(total);
+                                return '當月總額: ' + formatWan(total);
                             }
                         }
                     },
@@ -998,7 +997,7 @@
         tempCanvas.toBlob(function(blob) {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.download = `月度累計成交金額_${year}.jpg`;
+            link.download = `月度成交金額_${year}.jpg`;
             link.href = url;
             link.click();
             URL.revokeObjectURL(url);
