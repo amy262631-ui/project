@@ -1377,15 +1377,19 @@
         currentIdx=i;
         let p=projects[i];
         let rows = document.getElementById('paymentRows');
-        rows.innerHTML='<div class="row g-1 mb-2 fw-bold small text-center"><div class="col-3">項目</div><div class="col-3">金額</div><div class="col-1">票</div><div class="col-1">入</div><div class="col-4">入帳日</div></div>';
+        // 建立表頭，加入 % 欄位
+        rows.innerHTML='<div class="row g-1 mb-2 fw-bold small text-center"><div class="col-2">項目</div><div class="col-2">%</div><div class="col-2">金額</div><div class="col-1">票</div><div class="col-1">入</div><div class="col-4">入帳日</div></div>';
         document.getElementById('payTotalDisplay').innerText=formatWan(p.amount);
         let pays=p.payments||[];
 
         for(let k=0;k<6;k++){
             let item=pays[k]||{label:'',amount:'',isPaid:false, isReceived:false, receiveDate:''};
+            let pct=item.amount?((item.amount/p.amount)*100).toFixed(1):'';
+            
             rows.innerHTML+=`<div class="row g-1 mb-2 align-items-center">
-                <div class="col-3"><input class="form-control form-control-sm plabel" value="${item.label}"></div>
-                <div class="col-3"><input type="text" class="form-control form-control-sm pamount" value="${item.amount}" oninput="updatePayRemain(${p.amount})"></div>
+                <div class="col-2"><input class="form-control form-control-sm plabel" value="${item.label}"></div>
+                <div class="col-2"><input type="text" inputmode="decimal" class="form-control form-control-sm ppct" placeholder="%" value="${pct}" oninput="this.value=this.value.replace(/[^0-9.]/g,'');calcAmtByPct(this,${p.amount})"></div>
+                <div class="col-2"><input type="text" inputmode="decimal" class="form-control form-control-sm pamount" placeholder="金額" value="${item.amount}" oninput="this.value=this.value.replace(/[^0-9.]/g,'');calcPctByAmt(this,${p.amount})"></div>
                 <div class="col-1 text-center"><input type="checkbox" class="form-check-input pcheck" ${item.isPaid?'checked':''}></div>
                 <div class="col-1 text-center"><input type="checkbox" class="form-check-input precheck" ${item.isReceived?'checked':''}></div>
                 <div class="col-4"><input type="date" class="form-control form-control-sm predate" value="${item.receiveDate||''}"></div>
@@ -1396,12 +1400,16 @@
     }
 
     function calcAmtByPct(el,t){
-        el.closest('.row').querySelector('.pamount').value=!isNaN(parseFloat(el.value))?Math.round(t*(parseFloat(el.value)/100)):'';
+        let val = el.value;
+        let targetAmtInput = el.closest('.row').querySelector('.pamount');
+        targetAmtInput.value = (!isNaN(parseFloat(val))) ? Math.round(t * (parseFloat(val) / 100)) : '';
         updatePayRemain(t);
     }
 
     function calcPctByAmt(el,t){
-        el.closest('.row').querySelector('.ppct').value=(!isNaN(parseFloat(el.value))&&t>0)?((parseFloat(el.value)/t)*100).toFixed(1):'';
+        let val = el.value;
+        let targetPctInput = el.closest('.row').querySelector('.ppct');
+        targetPctInput.value = (!isNaN(parseFloat(val)) && t > 0) ? ((parseFloat(val) / t) * 100).toFixed(1) : '';
         updatePayRemain(t);
     }
 
@@ -1416,7 +1424,8 @@
         let arr=[];
         document.getElementById('paymentRows').querySelectorAll('.row').forEach((r, idx)=>{
             if(idx===0) return; // 跳過標題列
-            let l=r.querySelector('.plabel').value, a=r.querySelector('.pamount').value;
+            let l=r.querySelector('.plabel').value, 
+                a=r.querySelector('.pamount').value;
             if(l||a>0) arr.push({
                 label:l, 
                 amount:a, 
