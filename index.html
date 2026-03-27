@@ -95,6 +95,9 @@
         .step-box.pending {
             background-color: #ffc107;
         }
+        .step-box.received {
+            background-color: #0d6efd; /* 藍色代表已入帳 */
+        }
         /* 保固標籤 */
         .warranty-badge {
             cursor: pointer;
@@ -346,7 +349,9 @@
     <tr>
         <th>案號/日期</th>
         <th>名稱</th>
-        <th>合約金額</th> <th>請款狀態(開立發票)</th>
+        <th>合約金額</th> 
+        <th>發票狀態</th>
+        <th>入帳狀態</th>
         <th>進度</th>
         <th>操作</th>
     </tr>
@@ -691,64 +696,46 @@
         if(currentFilter !== 'ALL' && p.type !== currentFilter) return;
         count++;
         
-        let paidAmt=0, stepHtml='';
+        let paidAmt=0, receivedAmt=0;
+        let stepHtml='', receiveHtml='';
+        
         if(p.payments) p.payments.forEach(pay=>{
+            // 發票燈號
             if(pay.isPaid) paidAmt+=Number(pay.amount);
             if(pay.amount>0||pay.label) stepHtml+=`<span class="step-box ${pay.isPaid?'paid':'pending'}"></span>`;
+            // 入帳燈號
+            if(pay.isReceived) receivedAmt+=Number(pay.amount);
+            if(pay.amount>0||pay.label) receiveHtml+=`<span class="step-box ${pay.isReceived?'received':''}"></span>`;
         });
-        let pct=Math.round((paidAmt/p.amount)*100)||0;
-
-        let badge = '';
-        switch(p.type) {
-            case 'A': badge = 'badge bg-danger'; break;
-            case 'B': badge = 'badge bg-primary'; break;
-            case 'C': badge = 'badge bg-success'; break;
-            case 'D': badge = 'badge bg-warning text-dark'; break;
-            default: badge = 'badge bg-secondary';
-        }
-
-        let dateInfo = p.acceptDate ? `<span class="text-danger small">已結案(無保固)</span>` : `<span class="text-muted small">${p.contractDate}</span>`;
         
-        // --- 重點修改：在電腦版 <td> 中插入「合約金額」 ---
+        let pct=Math.round((paidAmt/p.amount)*100)||0;
+        let badge = (p.type === 'A') ? 'badge bg-danger' : (p.type === 'B') ? 'badge bg-primary' : (p.type === 'C') ? 'badge bg-success' : 'badge bg-warning text-dark';
+        
         deskT.innerHTML+=`<tr>
-            <td><b>${p.id}</b><br>${dateInfo}</td>
+            <td><b>${p.id}</b><br><span class="text-muted small">${p.contractDate}</span></td>
             <td>${p.name} <span class="${badge}">${p.type}</span></td>
-            <td class="fw-bold">${formatWan(p.amount)}</td> <td>
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-warning btn-sm me-2 fw-bold" onclick="openPaymentModal(${realIdx})">$</button>
-                    <div>${stepHtml}</div>
-                </div>
+            <td class="fw-bold">${formatWan(p.amount)}</td>
+            <td><div>${stepHtml}</div><small class="text-muted">${formatWan(paidAmt)}</small></td>
+            <td><div>${receiveHtml}</div><small class="text-primary">${formatWan(receivedAmt)}</small></td>
+            <td>
+                <div class="d-flex justify-content-between small"><span>${pct}%</span></div>
+                <div class="progress" style="height:6px"><div class="progress-bar bg-success" style="width:${pct}%"></div></div>
             </td>
             <td>
-                <div class="d-flex justify-content-between small">
-                    <span>${formatWan(paidAmt)}</span>
-                    <span>${pct}%</span>
-                </div>
-                <div class="progress" style="height:6px">
-                    <div class="progress-bar bg-success" style="width:${pct}%"></div>
-                </div>
-            </td>
-            <td>
+                <button class="btn btn-sm btn-warning" onclick="openPaymentModal(${realIdx})"><i class="fas fa-dollar-sign"></i></button>
                 <button class="btn btn-sm btn-outline-secondary" onclick="openProjectModal(${realIdx})"><i class="fas fa-edit"></i></button> 
-                <button class="btn btn-sm btn-outline-danger" onclick="delProject(${realIdx})"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`;
 
-        // 手機版（原本已有金額，維持原樣或視需要調整）
         mobT.innerHTML+=`<div class="mobile-card type-${p.type}" onclick="openProjectModal(${realIdx})">
             <div class="d-flex justify-content-between mb-2"><span class="${badge}">${p.type}案</span><span class="text-muted small">${p.id}</span></div>
             <h5 class="fw-bold mb-1">${p.name}</h5>
             <div class="row mt-3">
-                <div class="col-6"><span class="m-label">總金額</span><span class="m-value">${formatWan(p.amount)}</span></div>
-                <div class="col-6 text-end"><span class="m-label">已收 (${pct}%)</span><span class="text-success fw-bold">${formatWan(paidAmt)}</span></div>
+                <div class="col-6"><span class="m-label">發票進度</span>${stepHtml}</div>
+                <div class="col-6"><span class="m-label">入帳進度</span>${receiveHtml}</div>
             </div>
-            <div class="progress my-2" style="height:6px"><div class="progress-bar bg-success" style="width:${pct}%"></div></div>
-            <div class="d-flex justify-content-between align-items-center mt-2">
-                <div>${stepHtml}</div>
-                <div>
-                    <button class="btn btn-warning btn-sm me-1" onclick="event.stopPropagation();openPaymentModal(${realIdx})"><i class="fas fa-dollar-sign"></i> 請款</button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="event.stopPropagation();delProject(${realIdx})"><i class="fas fa-trash"></i></button>
-                </div>
+            <div class="text-end mt-2">
+                <button class="btn btn-warning btn-sm" onclick="event.stopPropagation();openPaymentModal(${realIdx})">管理收付款</button>
             </div>
         </div>`;
     });
@@ -1389,14 +1376,20 @@
     function openPaymentModal(i){
         currentIdx=i;
         let p=projects[i];
-        document.getElementById('paymentRows').innerHTML='';
+        let rows = document.getElementById('paymentRows');
+        rows.innerHTML='<div class="row g-1 mb-2 fw-bold small text-center"><div class="col-3">項目</div><div class="col-3">金額</div><div class="col-1">票</div><div class="col-1">入</div><div class="col-4">入帳日</div></div>';
         document.getElementById('payTotalDisplay').innerText=formatWan(p.amount);
         let pays=p.payments||[];
 
         for(let k=0;k<6;k++){
-            let item=pays[k]||{label:'',amount:'',isPaid:false};
-            let pct=item.amount?((item.amount/p.amount)*100).toFixed(1):'';
-            document.getElementById('paymentRows').innerHTML+=`<div class="row g-1 mb-2 align-items-center"><div class="col-auto"><span class="badge bg-secondary">${k+1}</span></div><div class="col-3"><input class="form-control form-control-sm plabel" placeholder="項目" value="${item.label}"></div><div class="col-2"><input type="text" inputmode="decimal" class="form-control form-control-sm ppct" placeholder="%" value="${pct}" oninput="this.value=this.value.replace(/[^0-9.]/g,'');calcAmtByPct(this,${p.amount})"></div><div class="col-3"><input type="text" inputmode="decimal" class="form-control form-control-sm pamount" placeholder="金額" value="${item.amount}" oninput="this.value=this.value.replace(/[^0-9.]/g,'');calcPctByAmt(this,${p.amount})"></div><div class="col-auto"><input type="checkbox" class="form-check-input pcheck" ${item.isPaid?'checked':''}></div></div>`;
+            let item=pays[k]||{label:'',amount:'',isPaid:false, isReceived:false, receiveDate:''};
+            rows.innerHTML+=`<div class="row g-1 mb-2 align-items-center">
+                <div class="col-3"><input class="form-control form-control-sm plabel" value="${item.label}"></div>
+                <div class="col-3"><input type="text" class="form-control form-control-sm pamount" value="${item.amount}" oninput="updatePayRemain(${p.amount})"></div>
+                <div class="col-1 text-center"><input type="checkbox" class="form-check-input pcheck" ${item.isPaid?'checked':''}></div>
+                <div class="col-1 text-center"><input type="checkbox" class="form-check-input precheck" ${item.isReceived?'checked':''}></div>
+                <div class="col-4"><input type="date" class="form-control form-control-sm predate" value="${item.receiveDate||''}"></div>
+            </div>`;
         }
         updatePayRemain(p.amount);
         new bootstrap.Modal(document.getElementById('paymentModal')).show();
@@ -1421,11 +1414,16 @@
 
     function savePayments(){
         let arr=[];
-        document.getElementById('paymentRows').querySelectorAll('.row').forEach(r=>{
-            let l=r.querySelector('.plabel').value,
-                a=r.querySelector('.pamount').value;
-            if(l||a>0)
-                arr.push({label:l,amount:a,isPaid:r.querySelector('.pcheck').checked});
+        document.getElementById('paymentRows').querySelectorAll('.row').forEach((r, idx)=>{
+            if(idx===0) return; // 跳過標題列
+            let l=r.querySelector('.plabel').value, a=r.querySelector('.pamount').value;
+            if(l||a>0) arr.push({
+                label:l, 
+                amount:a, 
+                isPaid:r.querySelector('.pcheck').checked,
+                isReceived:r.querySelector('.precheck').checked,
+                receiveDate:r.querySelector('.predate').value
+            });
         });
         projects[currentIdx].payments=arr;
         bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
