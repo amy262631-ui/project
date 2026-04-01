@@ -473,9 +473,10 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary w-100" onclick="saveProject()">儲存</button>
-            </div>
+           <div class="modal-footer d-flex gap-2">
+    <button type="button" id="btnDelProject" class="btn btn-outline-danger" style="display:none;" onclick="delProjectFromModal()">刪除</button>
+    <button type="button" class="btn btn-primary flex-fill" onclick="saveProject()">儲存</button>
+</div>
         </div>
     </div>
 </div>
@@ -1226,7 +1227,7 @@
         else document.getElementById('wMode1').checked = true;
     }
 
-    function openProjectModal(i=-1,isWarranty=false){
+ function openProjectModal(i=-1,isWarranty=false){
         currentIdx=i;
         document.getElementById('projectForm').reset();
         let today=new Date().toISOString().split('T')[0];
@@ -1234,6 +1235,10 @@
         document.getElementById('pWarrantyTrack').checked = true;
         document.getElementById('wMode1').checked = true;
         document.getElementById('archiveHint').style.display = 'none';
+        
+        // 控制刪除按鈕：只有在編輯現有案件 (i >= 0) 時才顯示
+        const delBtn = document.getElementById('btnDelProject');
+        if(delBtn) delBtn.style.display = (i >= 0) ? 'block' : 'none';
 
         document.getElementById('pWarrantyTrack').onchange = function() {
             document.getElementById('archiveHint').style.display = this.checked ? 'none' : 'block';
@@ -1319,6 +1324,16 @@
         if(confirm("【永久刪除】無法復原!確定嗎?")){
             projects.splice(i,1);
             renderAll(true);
+        }
+    }
+    function delProjectFromModal() {
+        if (currentIdx >= 0) {
+            // 呼叫原本已有的 delProject 邏輯
+            if(confirm("【永久刪除】無法復原!確定嗎?")){
+                projects.splice(currentIdx, 1);
+                bootstrap.Modal.getInstance(document.getElementById('projectModal')).hide();
+                renderAll(true);
+            }
         }
     }
 
